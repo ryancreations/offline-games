@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Games Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+            margin: 0;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .game-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .game-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            padding: 20px 40px;
+            font-size: 1.5em;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .game-btn:hover {
+            background: rgba(255,255,255,0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        }
+        .instructions {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Offline USB Games</h1>
+    <p>Plug in your USB drive, open this file in any browser, and play!</p>
+    <div class="game-list">
+        <a href="2048.html" class="game-btn">🧩 2048</a>
+        <a href="tictactoe.html" class="game-btn">❌⭕ Tic Tac Toe</a>
+        <a href="snake.html" class="game-btn">🐍 Snake</a>
+        <a href="memory.html" class="game-btn">🧠 Memory Match</a>
+        <a href="minesweeper.html" class="game-btn">💣 Minesweeper</a>
+    </div>
+    <div class="instructions">
+        <h2>How to Use:</h2>
+        <ol>
+            <li>Save all these HTML files (this one + the 5 game files) in the same folder on your USB drive.</li>
+            <li>Open <code>index.html</code> in any web browser (Chrome, Firefox, Edge, etc.).</li>
+            <li>Click a game to play. Works offline, no install needed!</li>
+            <li>Games support keyboard/mouse. Mobile-friendly where possible.</li>
+            <li>To restart most games: Refresh the page (F5).</li>
+        </ol>
+    </div>
+</body>
+</html>
