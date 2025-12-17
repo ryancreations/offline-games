@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048</title>
+    <style>
+        body {
+            font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+            background: #faf8ef;
+            color: #776e65;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            font-size: 16px;
+        }
+        h1 {
+            margin: 20px 0;
+            font-size: 80px;
+            font-weight: bold;
+        }
+        #game-container {
+            margin: 0 auto;
+            position: relative;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 500px;
+            height: 500px;
+            margin: 0 auto;
+            background: #bbada0;
+            padding: 15px;
+            border-radius: 10px;
+            box-sizing: border-box;
+        }
+        .tile {
+            background: #cdc1b4;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 55px;
+            font-weight: bold;
+            color: #776e65;
+            transition: all 0.2s ease;
+        }
+        #score {
+            font-size: 24px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        #message {
+            font-size: 24px;
+            margin: 20px 0;
+            min-height: 30px;
+        }
+        @media (max-width: 550px) {
+            #grid {
+                width: 90vw;
+                height: 90vw;
+                gap: 10px;
+                padding: 10px;
+            }
+            .tile {
+                font-size: 8vw;
+            }
+            h1 {
+                font-size: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>2048</h1>
+    <div id="game-container">
+        <div id="grid"></div>
+    </div>
+    <div id="score">Score: 0</div>
+    <div id="message"></div>
+    <p>Use arrow keys to slide tiles. Combine to reach 2048!</p>
+
+    <script>
+        const tileColors = {
+            0: '#CDC1B4',
+            2: '#EEE4DA', 4: '#EDE0C8', 8: '#F2B179', 16: '#F59563',
+            32: '#F67C5F', 64: '#F65E3B', 128: '#EDCF72', 256: '#EDCC61',
+            512: '#EDC850', 1024: '#EDC53F', 2048: '#EDC22E'
+        };
+        const tileTextColors = { 0: '#776E65' };
+        for (let i = 2; i <= 2048; i *= 2) {
+            tileTextColors[i] = i >= 8 ? '#F9F6F2' : '#776E65';
+        }
+
+        let grid = Array.from({length: 4}, () => Array(4).fill(0));
+        let score = 0;
+        let won = false;
+        let gameOver = false;
+
+        function copyGrid() {
+            return grid.map(row => [...row]);
+        }
+
+        function transpose(g) {
+            const ng = Array.from({length: 4}, () => Array(4).fill(0));
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    ng[j][i] = g[i][j];
+                }
+            }
+            return ng;
+        }
+
+        function slideRow(row, rev = false) {
+            let r = [...row];
+            if (rev) r.reverse();
+            let tiles = r.filter(t => t !== 0);
+            for (let i = 0; i < tiles.length - 1; i++) {
+                if (tiles[i] === tiles[i + 1]) {
+                    tiles[i] *= 2;
+                    score += tiles[i];
+                    tiles[i + 1] = 0;
+                    i++;
+                }
+            }
+            tiles = tiles.filter(t => t !== 0);
+            while (tiles.length < 4) tiles.push(0);
+            if (rev) tiles.reverse();
+            return tiles;
+        }
+
+        function performMove(dir) {
+            if (gameOver) return;
+            const oldGrid = copyGrid();
+            let changed = false;
+
+            if (dir === 0) { // left
+                for (let r = 0; r < 4; r++) {
+                    const nr = slideRow(grid[r], false);
+                    if (grid[r].join('|') !== nr.join('|')) changed = true;
+                    grid[r] = nr;
+                }
+            } else if (dir === 2) { // right
+                for (let r = 0; r < 4; r++) {
+                    const nr = slideRow(grid[r], true);
+                    if (grid[r].join('|') !== nr.join('|')) changed = true;
+                    grid[r] = nr;
+                }
+            } else if (dir === 1) { // up
+                grid = transpose(grid);
+                for (let r = 0; r < 4; r++) {
+                    const nr = slideRow(grid[r], false);
+                    if (grid[r].join('|') !== nr.join('|')) changed = true;
+                    grid[r] = nr;
+                }
+                grid = transpose(grid);
+            } else if (dir === 3) { // down
+                grid = transpose(grid);
+                for (let r = 0; r < 4; r++) {
+                    const nr = slideRow(grid[r], true);
+                    if (grid[r].join('|') !== nr.join('|')) changed = true;
+                    grid[r] = nr;
+                }
+                grid = transpose(grid);
+            }
+
+            document.getElementById('score').textContent = `Score: ${score}`;
+            updateGrid();
+
+            if (changed) {
+                addTile();
+                checkWin();
+            }
+
+            if (!changed && isGameOver()) {
+                setMessage('Game Over! Final Score: ' + score, 'red');
+                gameOver = true;
+            }
+        }
+
+        function addTile() {
+            const empty = [];
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 0) empty.push([i, j]);
+                }
+            }
+            if (empty.length) {
+                const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+                grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+            }
+        }
+
+        function updateGrid() {
+            const container = document.getElementById('grid');
+            container.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    const val = grid[i][j];
+                    tile.textContent = val || '';
+                    tile.style.backgroundColor = tileColors[val] || '#3C3A32';
+                    tile.style.color = tileTextColors[val] || '#776E65';
+                    container.appendChild(tile);
+                }
+            }
+        }
+
+        function isGameOver() {
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 0) return false;
+                }
+            }
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (grid[i][j] === grid[i][j + 1]) return false;
+                }
+            }
+            for (let j = 0; j < 4; j++) {
+                for (let i = 0; i < 3; i++) {
+                    if (grid[i][j] === grid[i + 1][j]) return false;
+                }
+            }
+            return true;
+        }
+
+        function checkWin() {
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    if (grid[i][j] === 2048 && !won) {
+                        won = true;
+                        setMessage('You win! Keep going for higher score!', 'gold');
+                    }
+                }
+            }
+        }
+
+        function setMessage(text, color = 'orange') {
+            document.getElementById('message').textContent = text;
+            document.getElementById('message').style.color = color;
+        }
+
+        // Init
+        addTile();
+        addTile();
+        updateGrid();
+        setMessage('Use arrow keys to play!');
+
+        document.addEventListener('keydown', (e) => {
+            e.preventDefault();
+            switch (e.key) {
+                case 'ArrowLeft': performMove(0); break;
+                case 'ArrowRight': performMove(2); break;
+                case 'ArrowUp': performMove(1); break;
+                case 'ArrowDown': performMove(3); break;
+            }
+        });
+    </script>
+</body>
+</html>
